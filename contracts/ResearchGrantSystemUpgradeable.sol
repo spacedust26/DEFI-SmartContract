@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.19;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/release-v5.0/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/release-v5.0/contracts/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuard {
-    using SafeMath for uint256;
+contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     struct Proposal {
         string title;
         string ipfsHash;
@@ -59,6 +57,8 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
     function initialize(address[] memory _daoMembers) public initializer {
         __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
+        __ReentrancyGuard_init();
+        
         deployer = msg.sender;
         for (uint256 i = 0; i < _daoMembers.length; i++) {
             daoMembers[_daoMembers[i]] = true;
