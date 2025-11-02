@@ -3,11 +3,9 @@ pragma solidity ^0.8.19;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/release-v5.0/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/release-v5.0/contracts/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuardUpgradeable.sol";
 
-contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuard {
-    using SafeMath for uint256;
+contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     struct Proposal {
         string title;
         string ipfsHash;
@@ -161,3 +159,4 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
         reviewers[reviewer] = Reviewer({creditScore: 50, registered: true});
     }
 }
+
