@@ -15,13 +15,12 @@ pragma solidity ^0.8.19;
  * - Secure ETH funding and payout to winning researchers
  */
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/release-v5.0/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/release-v5.0/contracts/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
-
-    /* ------------------------------------------------------------------------
+        /* ------------------------------------------------------------------------
        DATA STRUCTURES
     ------------------------------------------------------------------------ */
 
@@ -34,16 +33,16 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
         string institution;
         uint256 budget;
         address payable researcher;
-        uint256 totalScore;     // Sum of all review scores
-        uint256 reviewCount;    // Number of reviews received
-        bool funded;            // Funding status flag
+        uint256 totalScore; // Sum of all review scores
+        uint256 reviewCount; // Number of reviews received
+        bool funded; // Funding status flag
     }
 
     /// @notice Represents a review submitted by a reviewer
     struct Review {
-        string proposalIpfsHash; // Linked proposal (IPFS)
-        string reviewIpfsHash;   // IPFS location of review report
-        uint256 score;           // Numeric rating (0–100)
+        string proposalIpfsHash;  // Linked proposal (IPFS)
+        string reviewIpfsHash; // IPFS location of review report
+        uint256 score; // Numeric rating (0–100)
         address reviewer;
     }
 
@@ -78,14 +77,13 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
     /* ------------------------------------------------------------------------
        EVENTS
     ------------------------------------------------------------------------ */
-
     event FundsDeposited(address indexed contributor, uint256 amount);
     event ProposalSubmitted(address indexed researcher, string ipfsHash);
     event ProposalVoted(address indexed reviewer, string ipfsHash, uint256 score);
     event ReviewerVoted(address indexed daoMember, address reviewer, uint256 vote);
     event FundsAllocated(address indexed researcher, uint256 amount);
 
-    /* ------------------------------------------------------------------------
+     /* ------------------------------------------------------------------------
        MODIFIERS
     ------------------------------------------------------------------------ */
 
@@ -103,7 +101,6 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
      * @dev UUPS upgrade authorization. Only owner can upgrade.
      */
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
-
     /* ------------------------------------------------------------------------
        INITIALIZATION (instead of constructor for upgradeable contracts)
     ------------------------------------------------------------------------ */
@@ -115,15 +112,14 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
     function initialize(address[] memory _daoMembers) public initializer {
         __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
-
+        __ReentrancyGuard_init();
+        
         deployer = msg.sender;
-
         // Grant DAO permissions
         for (uint256 i = 0; i < _daoMembers.length; i++) {
             daoMembers[_daoMembers[i]] = true;
         }
     }
-
     /* ------------------------------------------------------------------------
        FUNDING MECHANISM
     ------------------------------------------------------------------------ */
@@ -166,7 +162,6 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
             reviewCount: 0,
             funded: false
         });
-
         proposalList.push(_ipfsHash);
         emit ProposalSubmitted(msg.sender, _ipfsHash);
     }
@@ -209,7 +204,6 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
 
         p.totalScore += _score;
         p.reviewCount += 1;
-
         emit ProposalVoted(msg.sender, _proposalIpfs, _score);
     }
 
@@ -229,11 +223,12 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
     function voteReviewer(address reviewer, uint256 vote) external onlyDAO {
         require(vote <= 100, "Invalid vote");
         reviewers[reviewer].creditScore =
-            (reviewers[reviewer].creditScore + vote) / 2;
+            (reviewers[reviewer].creditScore + vote) /
+            2;
         emit ReviewerVoted(msg.sender, reviewer, vote);
     }
 
-    /* ------------------------------------------------------------------------
+     /* ------------------------------------------------------------------------
        FUND ALLOCATION
     ------------------------------------------------------------------------ */
 
@@ -243,25 +238,21 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
      */
     function allocateFunds(string memory _ipfsHash) external nonReentrant onlyOwner {
         Proposal storage p = proposals[_ipfsHash];
-
         require(p.researcher != address(0), "Zero address");
         require(!p.funded, "Already funded");
         require(p.reviewCount > 0, "No reviews");
-
         // Calculate average safely (scaled to avoid precision loss)
         require((p.totalScore * 1e18 / p.reviewCount) >= 75e18, "Low score");
         require(totalFunds >= p.budget, "Insufficient funds");
 
         totalFunds -= p.budget;
         p.funded = true;
-
         (bool sent, ) = p.researcher.call{value: p.budget}("");
         require(sent, "Transfer failed");
-
         emit FundsAllocated(p.researcher, p.budget);
     }
 
-    /* ------------------------------------------------------------------------
+        /* ------------------------------------------------------------------------
        REVIEWER REGISTRATION
     ------------------------------------------------------------------------ */
 
@@ -272,4 +263,3 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
         reviewers[reviewer] = Reviewer({creditScore: 50, registered: true});
     }
 }
-
