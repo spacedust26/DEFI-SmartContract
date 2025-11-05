@@ -17,7 +17,7 @@ pragma solidity ^0.8.19;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/release-v5.0/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/release-v5.0/contracts/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
@@ -272,3 +272,4 @@ contract ResearchGrantSystemUpgradeable is UUPSUpgradeable, OwnableUpgradeable, 
         reviewers[reviewer] = Reviewer({creditScore: 50, registered: true});
     }
 }
+
